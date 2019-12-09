@@ -68,8 +68,6 @@ md$startDate <- as.Date(md$start_time)
 # 
 # add results as columns in userVisits
 totalUserVisits = md[, list( 
-                       total_page_urls = sum(!is.na(page_url)),
-                       total_unique_site_names = uniqueN(site_name), 
                      avg_duration_ms = mean(duration_ms),
                      avg_duration_minutes = mean(duration_ms / 6000),
                      avg_num_sites_per_day = uniqueN(page_url) / uniqueN(startDate),
@@ -80,11 +78,13 @@ totalUserVisits = md[, list(
                      avg_num_sites_thursday = (mean(uniqueN(site_name[day_of_week=="Thursday"]))),
                      avg_num_sites_friday = (mean(uniqueN(site_name[day_of_week=="Friday"]))),
                      avg_num_sites_saturday = (mean(uniqueN(site_name[day_of_week=="Saturday"]))),
-                     total_news_visits= uniqueN(page_url[category1 == "News"]),
                      duration_variance_min = var(duration_ms / 6000),
                      duration_sd_min = sd(duration_ms / 6000),
-                     blank_urls = sum(is.na(page_url))),
-                     by = member_id][order(blank_urls, member_id)] 
+                     total_unique_site_names = uniqueN(site_name), 
+                     total_page_urls = sum(!is.na(page_url)),
+                     total_blank_urls = sum(is.na(page_url)),
+                     percentage_of_urls_that_are_blank = ( sum(is.na(page_url)) / sum(!is.na(page_url)))),
+                     by = member_id][order(total_blank_urls, member_id)] 
 
 
 # find number of respondents without blank url records
@@ -101,7 +101,7 @@ blankRecords <- md[,
 
 
 # save preliminary data into Excel file
-# write.xlsx(totalUserVisits, "Site Visits Count and Duration by User.xlsx")
+ write.xlsx(totalUserVisits, "Site Visits Count and Duration by User.xlsx")
 
 # create summary table
 # totalSummary <- summary(totalUserVisits)
@@ -134,6 +134,5 @@ generalNewsExposure = md[, list(
 #
 #
 sources <- read.xlsx('sources.xlsx', colNames = FALSE)
-
 
 
