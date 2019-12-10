@@ -18,7 +18,7 @@
 # install.packages('lubridate')  
 # install.packages('stringi')
 # install.packages('ggplot2')
-install.packages('scales')
+# install.packages('scales')
 
 # --------------------------------------------------
 #    --- SETTING UP ---
@@ -101,7 +101,7 @@ blankRecords <- md[,
 
 
 # save preliminary data into Excel file
- write.xlsx(totalUserVisits, "Site Visits Count and Duration by User.xlsx")
+# write.xlsx(totalUserVisits, "Site Visits Count and Duration by User.xlsx")
 
 # create summary table
 # totalSummary <- summary(totalUserVisits)
@@ -128,11 +128,50 @@ generalNewsExposure = md[, list(
 # save generalNewsExposure into Excel file
 # write.xlsx(generalNewsExposure, "General News Exposure by Users.xlsx")
 
+
+
 # --------------------------------------------------
 #
 # (3) find : weekly and total counts of exposure to specific sources
 #
 #
+
+
+
 sources <- read.xlsx('sources.xlsx', colNames = FALSE)
+
+# trim white space from source names
+for(i in seq_along(sources)){
+  sources$X1[i] <- str_trim(sources$X1[i])
+}
+
+sc<-sources$X1
+
+for(i in seq_along(sc)){
+  sc[i] <- str_trim(sc[i])
+}
+
+# duplicate md to new data table oe
+oe <- copy(md)
+
+# create columns for each source and indicate 1 if page_url comes from that source
+for(j in seq_along(sc)){       
+  oe[, paste0(sc[j]) := ifelse(grepl(sc[j], page_url), 1, 0)]
+}
+
+# create table of number of visits to specific outlets by respondent
+outletVisits = oe[, 
+          lapply(.SD, sum), 
+          by = member_id, .SDcols = sc][order(member_id)]
+
+
+# save outletVisits into Excel file
+write.xlsx(outletVisits, "Number of Outlet-Specific Visits by User.xlsx")
+
+mergedRespondentData <- merge(totalUserVisits, outletVisits)
+
+# save outletVisits into Excel file
+write.xlsx(mergedRespondentData, "Merged - duration, general visits, outlet-specific visits.xlsx")
+
 
 
